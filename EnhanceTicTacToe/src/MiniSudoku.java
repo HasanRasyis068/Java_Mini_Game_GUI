@@ -5,7 +5,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class MiniSudoku extends JFrame implements ActionListener {
+
+
+public class MiniSudoku extends JFrame implements ActionListener, SudokuGame {
 
     private static final int GRID_SIZE = 3;
     private static final int NUM_RANDOM_NUMBERS = 2;
@@ -87,6 +89,8 @@ public class MiniSudoku extends JFrame implements ActionListener {
         });
     }
 
+
+    @Override
     public void initializeGame() {
         do {
             board = new int[GRID_SIZE][GRID_SIZE];
@@ -108,6 +112,8 @@ public class MiniSudoku extends JFrame implements ActionListener {
         minutes = 0;
         timer.start();
     }
+
+
     // Metode getter untuk mendapatkan nilai dari variabel private
     public int[][] getBoard() {
         return board;
@@ -287,7 +293,8 @@ public class MiniSudoku extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MiniSudoku());
+        SudokuGame sudokuGame = new MiniSudoku();
+        sudokuGame.initializeGame();
     }
 }
 
