@@ -1,9 +1,13 @@
+package com.contoh.sudoku;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class MiniSudoku extends JFrame implements ActionListener {
+
+
+public class MiniSudoku extends JFrame implements ActionListener, SudokuGame {
 
     private static final int GRID_SIZE = 3;
     private static final int NUM_RANDOM_NUMBERS = 2;
@@ -66,7 +70,7 @@ public class MiniSudoku extends JFrame implements ActionListener {
         setVisible(true);
 
         initializeTimer();
-        generateSudoku();
+        initializeGame();
     }
 
     private void initializeTimer() {
@@ -85,11 +89,12 @@ public class MiniSudoku extends JFrame implements ActionListener {
         });
     }
 
-    private void generateSudoku() {
+
+    @Override
+    public void initializeGame() {
         do {
             board = new int[GRID_SIZE][GRID_SIZE];
             originalNumbers = new int[GRID_SIZE][GRID_SIZE];
-
 
             java.util.Random random = new java.util.Random();
 
@@ -99,15 +104,23 @@ public class MiniSudoku extends JFrame implements ActionListener {
                 originalNumbers[i][j] = random.nextInt(3) + 1;
                 board[i][j] = originalNumbers[i][j];
             }
-        }while (!isSudokuComplete());
+        } while (!isSudokuComplete());
 
-        // Populate the GUI with the generated Sudoku
         updateUIWithSudoku();
 
-        // Start the timer on a new game
         seconds = 0;
         minutes = 0;
         timer.start();
+    }
+
+
+    // Metode getter untuk mendapatkan nilai dari variabel private
+    public int[][] getBoard() {
+        return board;
+    }
+
+    public int[][] getOriginalNumbers() {
+        return originalNumbers;
     }
 
     private void updateUIWithSudoku() {
@@ -225,62 +238,63 @@ public class MiniSudoku extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == newGameButton) {
-            timer.stop();
-            generateSudoku();
-            resetTimer();
-            timer.start();
-            isPaused = false;
-
-        } else if (e.getSource() == pauseButton) {
-            isPaused = true;
-            timer.stop();
-            int option = JOptionPane.showConfirmDialog(this,
-                    "Game is paused. Do you want to continue?", "Pause",
-                    JOptionPane.YES_NO_OPTION);
-
-            if (option == JOptionPane.YES_OPTION) {
-                isPaused = false;
-                timer.start();
-            } else {
-                resetTimer();
-            }
-        } else if (e.getSource() == checkButton) {
-            // Check for duplicate numbers in rows and columns
-            if (isUniqueRows() && isUniqueColumns()) {
+        try {
+            if (e.getSource() == newGameButton) {
                 timer.stop();
-                JOptionPane.showMessageDialog(this, "Congratulations You Win! No double numbers in rows and columns.");
+                initializeGame();
+                resetTimer();
+                timer.start();
+                isPaused = false;
+            } else if (e.getSource() == pauseButton) {
+                isPaused = true;
+                timer.stop();
                 int option = JOptionPane.showConfirmDialog(this,
-                        "Do you want play again?", "Win!",
+                        "Game is paused. Do you want to continue?", "Pause",
                         JOptionPane.YES_NO_OPTION);
 
                 if (option == JOptionPane.YES_OPTION) {
-                    timer.stop();
-                    generateSudoku();
-                    resetTimer();
-                    timer.start();
                     isPaused = false;
+                    timer.start();
                 } else {
                     resetTimer();
-                    System.exit(0);
                 }
-            } else {
+            } else if (e.getSource() == checkButton) {
+                if (isUniqueRows() && isUniqueColumns()) {
+                    timer.stop();
+                    JOptionPane.showMessageDialog(this, "Congratulations You Win!");
+                    int option = JOptionPane.showConfirmDialog(this,
+                            "Do you want play again?", "Win!",
+                            JOptionPane.YES_NO_OPTION);
 
-                    // Check for invalid input
+                    if (option == JOptionPane.YES_OPTION) {
+                        timer.stop();
+                        initializeGame();
+                        resetTimer();
+                        timer.start();
+                        isPaused = false;
+                    } else {
+                        resetTimer();
+                        System.exit(0);
+                    }
+                } else {
                     if (!isInputValid()) {
                         JOptionPane.showMessageDialog(this, "Invalid input! Please enter numbers between 1 and 3.");
                     } else {
                         JOptionPane.showMessageDialog(this, "There are duplicate numbers in rows or columns. Keep trying!");
                     }
-
+                }
+            } else {
+                checkEndGame();
             }
-        } else {
-            // Check if the Sudoku puzzle is solved when a text field value changes
-            checkEndGame();
+        } catch (NumberFormatException ex) {
+            // Tangani NumberFormatException jika konversi gagal
+            JOptionPane.showMessageDialog(this, "Invalid input! Please enter valid numbers.");
         }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MiniSudoku());
+        SudokuGame sudokuGame = new MiniSudoku();
+        sudokuGame.initializeGame();
     }
 }
+
